@@ -18,6 +18,7 @@ namespace ApiCore
 
         private int apiId;
         private SessionInfo session;
+        private string method;
 
         /// <summary>
         /// Initializes api query builder
@@ -29,7 +30,6 @@ namespace ApiCore
             this.paramData = new Dictionary<string, string>();
             this.apiId = apiId;
             this.session = si;
-            this.Add("api_id", this.apiId.ToString());
         }
 
         /// <summary>
@@ -42,6 +42,22 @@ namespace ApiCore
         {
             this.paramData.Add(key, value);
             return this;
+        }
+
+        /// <summary>
+        /// Add method
+        /// </summary>
+        /// <param name="method">Method name</param>
+        /// <param name="xml">Get xml response</param>
+        /// <returns>this</returns>
+        public ApiQueryBuilder Method(string m, bool xml = false)
+        {
+            method = m;
+            if (xml)
+                method += ".xml";
+
+            return this;
+
         }
 
         /// <summary>
@@ -58,31 +74,17 @@ namespace ApiCore
         /// <returns>Ready query string</returns>
         public string BuildQuery()
         {
-            StringBuilder sb = new StringBuilder("http://api.vkontakte.ru/api.php?");
-            
-            this.Add("v", "3.0");
-            // sorting params
-            List<KeyValuePair<string, string>> myList = new List<KeyValuePair<string, string>>(this.paramData); 
-            myList.Sort( 
-                delegate(KeyValuePair<string, string> keyfirst, 
-                KeyValuePair<string, string> keylast) 
-                { 
-                    return keyfirst.Key.CompareTo(keylast.Key); 
-                } 
-            );
+            StringBuilder sb = new StringBuilder("https://api.vkontakte.ru/method/");
 
-            StringBuilder md5sig = new StringBuilder(this.session.MemberId);
-            foreach (KeyValuePair<string, string> rec in myList)
+            sb.Append(method + "?");
+
+            foreach (KeyValuePair<string, string> kp in paramData)
             {
-                md5sig.Append(rec.Key + "=" + rec.Value);
-                sb.Append(rec.Key + "=" + rec.Value + "&");
+                sb.Append(kp.Key + "=" + kp.Value + "&");
             }
+            sb.Append("access_token=" + session.AccessToken);
 
-            md5sig.Append(this.session.Secret);
-            sb.Append("sig=" + CommonUtils.Md5(md5sig.ToString()).ToLower());
-            sb.Append("&sid=" + this.session.SessionId);
-            //sb.Append(
-            return sb.ToString();//this.query;
+            return sb.ToString();
         }
     }
 }

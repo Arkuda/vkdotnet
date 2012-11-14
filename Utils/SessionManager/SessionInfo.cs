@@ -8,10 +8,10 @@ namespace ApiCore
     {
         public int AppId;
         public int Permissions;
-        public string SessionId;
-        public string MemberId;
-        public string Secret;
-        public string Signature;
-        public int Expire;
+        public string AccessToken;
+        public string UserId;
+        //public string Secret;
+        //public string Signature;
+        public int ExpiresIn;
     }
 }

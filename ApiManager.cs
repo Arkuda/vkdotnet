@@ -100,16 +100,14 @@ namespace ApiCore
         /// </summary>
         /// <param name="methodName">Method name</param>
         /// <returns>this</returns>
-        public ApiManager Method(string methodName)
+        public ApiManager Method(string methodName, bool getXml = false)
         {
             this.MethodSuccessed = false;
             ApiRequest.Timeout = this.Timeout;
             this.builder = new ApiQueryBuilder(this.appId, this.session);
-            this.builder.Add("method", methodName);
-            if (this.ResponseAs == ResponseType.Json)
-            {
-                this.builder.Add("format", "json");
-            }
+
+            this.builder.Method(methodName, getXml);
+
             this.debugMsg("Method: " + methodName);
             return this;
         }
@@ -143,35 +141,36 @@ namespace ApiCore
                     this.OnLog("Request string: " + req);
                     ApiRequest.Timeout = this.Timeout;
                     this.apiResponseString = ApiRequest.Send(req);
-                    this.debugMsg(this.apiResponseString);
-                    if (!this.apiResponseString.Equals("") || this.apiResponseString.Length > 0)
-                    {
-                        this.apiResponseXml = new XmlDocument();
-                        this.apiResponseXml.LoadXml(this.apiResponseString);
-                        XmlNode isError = this.apiResponseXml.SelectSingleNode("/error");
-                        if (isError == null)
-                        {
-                            this.MethodSuccessed = true;
-                        }
-                        else
-                        {
-                            int code = Convert.ToInt32(isError.SelectSingleNode("error_code").InnerText);
-                            string msg = isError.SelectSingleNode("error_msg").InnerText;
-                            Hashtable ht = new Hashtable();
-                            XmlNodeList pparams = isError.SelectNodes("request_params/param");
-                            foreach (XmlNode n in pparams)
-                            {
-                                ht[n.SelectSingleNode("key").InnerText.ToString()] = n.SelectSingleNode("value").InnerText.ToString();
-                            }
 
-                            throw new ApiRequestErrorException("Server error occurred", code, msg, ht);
-                        }
-                        //return this;
-                    }
-                    else
-                    {
-                        throw new ApiRequestEmptyAnswerException("API Server returns an empty answer or request timeout");
-                    }
+                    //this.debugMsg(this.apiResponseString);
+                    //if (!this.apiResponseString.Equals("") || this.apiResponseString.Length > 0)
+                    //{
+                    //    this.apiResponseXml = new XmlDocument();
+                    //    this.apiResponseXml.LoadXml(this.apiResponseString);
+                    //    XmlNode isError = this.apiResponseXml.SelectSingleNode("/error");
+                    //    if (isError == null)
+                    //    {
+                    //        this.MethodSuccessed = true;
+                    //    }
+                    //    else
+                    //    {
+                    //        int code = Convert.ToInt32(isError.SelectSingleNode("error_code").InnerText);
+                    //        string msg = isError.SelectSingleNode("error_msg").InnerText;
+                    //        Hashtable ht = new Hashtable();
+                    //        XmlNodeList pparams = isError.SelectNodes("request_params/param");
+                    //        foreach (XmlNode n in pparams)
+                    //        {
+                    //            ht[n.SelectSingleNode("key").InnerText.ToString()] = n.SelectSingleNode("value").InnerText.ToString();
+                    //        }
+
+                    //        throw new ApiRequestErrorException("Server error occurred", code, msg, ht);
+                    //    }
+                    //    //return this;
+                    //}
+                    //else
+                    //{
+                    //    throw new ApiRequestEmptyAnswerException("API Server returns an empty answer or request timeout");
+                    //}
                     
                 //};
             //bw.RunWorkerCompleted += (o, e) =>
